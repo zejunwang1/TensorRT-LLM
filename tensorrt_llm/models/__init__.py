@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from .baichuan.model import BaichuanForCausalLM
-from .bert.model import (BertForQuestionAnswering,
+from .bert.model import (BertForQuestionAnswering, BertForMaskedLM,
                          BertForSequenceClassification, BertModel,
                          RobertaForQuestionAnswering,
                          RobertaForSequenceClassification, RobertaModel)
@@ -65,6 +65,7 @@ from .stdit.model import STDiT3Model
 
 __all__ = [
     'BertModel',
+    'BertForMaskedLM',
     'BertForQuestionAnswering',
     'BertForSequenceClassification',
     'RobertaModel',
@@ -218,6 +219,7 @@ MODEL_MAP = {
     'BertForSequenceClassification': BertForSequenceClassification,
     'BertModel': BertModel,
     'RobertaModel': RobertaModel,
+    'BertForMaskedLM': BertForMaskedLM,
     'RobertaForQuestionAnswering': RobertaForQuestionAnswering,
     'RobertaForSequenceClassification': RobertaForSequenceClassification,
 }

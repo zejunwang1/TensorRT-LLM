@@ -19,7 +19,7 @@ import torch
 
 # isort: off
 from transformers import (AutoModel, AutoModelForQuestionAnswering,
-                          AutoModelForSequenceClassification)
+                          AutoModelForMaskedLM, AutoModelForSequenceClassification)
 from transformers import (BertPreTrainedModel, RobertaPreTrainedModel)
 # isort: on
 from ...logger import logger
@@ -205,6 +205,30 @@ def _load_weights_from_hf_bert_cls_model(
     return (weights, no_match)
 
 
+def _load_weights_from_hf_bert_mask_model(
+        hf_model: Union[BertPreTrainedModel, RobertaPreTrainedModel],
+        model_config: BERTConfig,
+        torch_dtype: torch.dtype = torch.float16):
+
+    weights, no_match = _load_weights_from_hf_bert_model(
+        hf_model, model_config, torch_dtype)
+
+    weights['cls.dense.weight'] = no_match['cls.predictions.transform.dense.weight']
+    weights['cls.dense.bias'] = no_match['cls.predictions.transform.dense.bias']
+    weights['cls.layernorm.weight'] = no_match['cls.predictions.transform.LayerNorm.weight']
+    weights['cls.layernorm.bias'] = no_match['cls.predictions.transform.LayerNorm.bias']
+    weights['cls.decoder.weight'] = no_match['cls.predictions.decoder.weight']
+    weights['cls.decoder.bias'] = no_match['cls.predictions.decoder.bias']
+    del no_match['cls.predictions.transform.dense.weight']
+    del no_match['cls.predictions.transform.dense.bias']
+    del no_match['cls.predictions.transform.LayerNorm.weight']
+    del no_match['cls.predictions.transform.LayerNorm.bias']
+    del no_match['cls.predictions.decoder.weight']
+    del no_match['cls.predictions.decoder.bias']
+
+    return (weights, no_match)
+
+
 def load_hf_bert_base(model_dir: str,
                       load_model_on_cpu: bool = False,
                       dtype: torch.dtype = torch.float16):
@@ -253,6 +277,22 @@ def load_hf_bert_cls(model_dir: str,
     return model
 
 
+def load_hf_bert_mlm(model_dir: str,
+                     load_model_on_cpu: bool = False,
+                     dtype: torch.dtype = torch.float16):
+    """
+    load huggingface BertForMaskedLM
+    """
+    model = AutoModelForMaskedLM.from_pretrained(
+        model_dir,
+        trust_remote_code=True,
+    )
+    if not load_model_on_cpu:
+        model.cuda().to(dtype)
+    model.eval()
+    return model
+
+
 def load_weights_from_hf_model(
     hf_model,
     config: BERTConfig,
@@ -283,6 +323,9 @@ def load_weights_from_hf_model(
             "BertForSequenceClassification", "RobertaForSequenceClassification"
     ]:
         weights, no_match = _load_weights_from_hf_bert_cls_model(
+            hf_model=hf_model, model_config=config, torch_dtype=torch_dtype)
+    elif config.architecture == "BertForMaskedLM":
+        weights, no_match = _load_weights_from_hf_bert_mask_model(
             hf_model=hf_model, model_config=config, torch_dtype=torch_dtype)
     else:
         assert False, f"Unknown BERT model {config.architecture}"

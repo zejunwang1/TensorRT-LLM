@@ -30,7 +30,7 @@ from ...module import Module, ModuleList
 from ..modeling_utils import QuantConfig
 from .config import BERTConfig
 from .convert import (load_hf_bert_base, load_hf_bert_cls, load_hf_bert_qa,
-                      load_weights_from_hf_model)
+                      load_hf_bert_mlm, load_weights_from_hf_model)
 
 
 class BertEmbedding(Module):
@@ -143,6 +143,8 @@ class BertBase(PretrainedModel):
             return load_hf_bert_qa(model_dir, load_model_on_cpu, dtype)
         elif cls.__name__ == "BertForSequenceClassification":
             return load_hf_bert_cls(model_dir, load_model_on_cpu, dtype)
+        elif cls.__name__ == "BertForMaskedLM":
+            return load_hf_bert_mlm(model_dir, load_model_on_cpu, dtype)
         else:
             assert False, f"Unknown class {cls.__name__}!"
 
@@ -546,3 +548,64 @@ class BertForSequenceClassification(BertBase):
 
 
 RobertaForSequenceClassification = BertForSequenceClassification
+
+
+class BertMLMHead(Module):
+    def __init__(self, hidden_size, hidden_act, vocab_size, dtype):
+        super().__init__()
+
+        self.dense = Linear(hidden_size, hidden_size, dtype=dtype)
+        self.activation = ACT2FN[hidden_act]
+        self.layernorm = LayerNorm(normalized_shape=hidden_size, dtype=dtype)
+
+        self.decoder = Linear(hidden_size, vocab_size, dtype=dtype)
+
+    def forward(self, hidden_states):
+        hidden_states = self.dense(hidden_states)
+        hidden_states = self.activation(hidden_states)
+        hidden_states = self.layernorm(hidden_states)
+
+        prediction_scores = self.decoder(hidden_states)
+        return prediction_scores
+
+
+class BertForMaskedLM(BertBase):
+
+    def __init__(self, config: BERTConfig):
+        super().__init__(config)
+        self.bert = BertModel(config)
+
+        self.cls = BertMLMHead(hidden_size=config.hidden_size,
+                               hidden_act=config.hidden_act,
+                               vocab_size=config.vocab_size,
+                               dtype=config.dtype)
+
+    def forward(self,
+                input_ids,
+                input_lengths,
+                token_type_ids=None,
+                position_ids=None,
+                hidden_states=None,
+                max_input_length=None):
+
+        remove_input_padding = default_net().plugin_config.remove_input_padding
+        if remove_input_padding:
+            assert token_type_ids is not None and \
+                   position_ids is not None and \
+                   max_input_length is not None, \
+                   "token_type_ids, position_ids, max_input_length is required " \
+                   "in remove_input_padding mode"
+
+        hidden_states = self.bert.forward(input_ids=input_ids,
+                                          input_lengths=input_lengths,
+                                          token_type_ids=token_type_ids,
+                                          position_ids=position_ids,
+                                          hidden_states=hidden_states,
+                                          max_input_length=max_input_length)
+
+        predictions = self.cls(hidden_states)
+
+        predictions.mark_output('predictions', self.config.dtype)
+        return predictions
+
+

@@ -11,7 +11,7 @@ import tensorrt_llm
 from tensorrt_llm._utils import release_gc
 from tensorrt_llm.logger import logger
 from tensorrt_llm.mapping import Mapping
-from tensorrt_llm.models import (BertForQuestionAnswering,
+from tensorrt_llm.models import (BertForQuestionAnswering, BertForMaskedLM,
                                  BertForSequenceClassification, BertModel,
                                  RobertaForQuestionAnswering,
                                  RobertaForSequenceClassification, RobertaModel)
@@ -25,6 +25,7 @@ def parse_arguments():
                         required=True,
                         choices=[
                             'BertModel',
+                            'BertForMaskedLM',
                             'BertForQuestionAnswering',
                             'BertForSequenceClassification',
                             'RobertaModel',
@@ -106,6 +107,7 @@ def convert_and_save_hf(args):
     def convert_and_save_rank(args, rank, tllm_class: Union[
         BertModel,
         RobertaModel,
+        BertForMaskedLM,
         BertForQuestionAnswering,
         RobertaForQuestionAnswering,
         BertForSequenceClassification,
@@ -141,7 +143,8 @@ def convert_and_save_hf(args):
 
 
 def execute(workers, func, args,
-            tllm_class: Union[BertModel, RobertaModel, BertForQuestionAnswering,
+            tllm_class: Union[BertModel, RobertaModel, BertForMaskedLM,
+                              BertForQuestionAnswering,
                               RobertaForQuestionAnswering,
                               BertForSequenceClassification,
                               RobertaForSequenceClassification]):
