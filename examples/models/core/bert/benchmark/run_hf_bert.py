@@ -9,7 +9,6 @@ from transformers import BertModel, BertForMaskedLM, BertForQuestionAnswering, B
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name', type=str, required=True)
     parser.add_argument('--hf_model_dir', type=str, required=True)
     parser.add_argument('--text_file', type=str, required=True)
     return parser.parse_args()
@@ -20,10 +19,12 @@ if __name__ == '__main__':
 
     torch.cuda.set_device(0)
 
-    # Load tokenizer and model
     config = AutoConfig.from_pretrained(args.hf_model_dir)
+    model_name = config['architectures'][0]
+    
+    # Load tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained(args.hf_model_dir)
-    model = global()[f'{args.model_name}'].from_pretrained(args.hf_model_dir).cuda().to(torch.float16).eval()
+    model = global()[f'{model_name}'].from_pretrained(args.hf_model_dir).cuda().to(torch.float16).eval()
 
     texts = []
     with open(args.text_file, mode='r', encoding='utf-8') as f:
