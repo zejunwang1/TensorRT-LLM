@@ -20,7 +20,7 @@ if __name__ == '__main__':
     torch.cuda.set_device(0)
 
     config = AutoConfig.from_pretrained(args.hf_model_dir)
-    model_name = config['architectures'][0]
+    model_name = config.architectures[0]
     
     # Load tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained(args.hf_model_dir)
