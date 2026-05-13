@@ -24,7 +24,7 @@ if __name__ == '__main__':
     
     # Load tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained(args.hf_model_dir)
-    model = global()[f'{model_name}'].from_pretrained(args.hf_model_dir).cuda().to(torch.float16).eval()
+    model = globals()[f'{model_name}'].from_pretrained(args.hf_model_dir).cuda().to(torch.float16).eval()
 
     texts = []
     with open(args.text_file, mode='r', encoding='utf-8') as f:
