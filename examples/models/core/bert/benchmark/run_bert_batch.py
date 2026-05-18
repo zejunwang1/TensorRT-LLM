@@ -122,7 +122,7 @@ if __name__ == '__main__':
     with open(config_path, 'r') as f:
         config = json.load(f)
 
-    remove_input_padding = config['build_config']['plugin_config']['remove_input_padding']
+    remove_padding = config['build_config']['plugin_config']['remove_input_padding']
     assert args.remove_input_padding == remove_padding, \
         f"The engine is build with remove_input_padding={remove_padding}, \
         but the inference runtime is performed with remove_input_padding={args.remove_input_padding}!"
@@ -151,7 +151,7 @@ if __name__ == '__main__':
 
     # Warmup
     warmup_texts = texts[0 : args.batch_size + 1]
-    warmup_inputs, warmup_outputs = prepare_inputs(warmup_texts, tokenizer, remove_input_padding)
+    warmup_inputs, warmup_outputs = prepare_inputs(warmup_texts, tokenizer, remove_padding)
     logger.info(f"Warmup...")
     ok = session.run(inputs=warmup_inputs, outputs=warmup_outputs, stream=0)
     assert ok, "Runtime execution failed"
