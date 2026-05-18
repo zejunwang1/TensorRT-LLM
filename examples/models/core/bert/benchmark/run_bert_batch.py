@@ -150,7 +150,7 @@ if __name__ == '__main__':
                 texts.append(text)
 
     # Warmup
-    warmup_texts = texts[0:2]
+    warmup_texts = texts[0 : args.batch_size + 1]
     warmup_inputs, warmup_outputs = prepare_inputs(warmup_texts, tokenizer, remove_input_padding)
     logger.info(f"Warmup...")
     ok = session.run(inputs=warmup_inputs, outputs=warmup_outputs, stream=0)
