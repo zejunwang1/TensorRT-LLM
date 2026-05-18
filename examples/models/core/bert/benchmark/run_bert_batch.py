@@ -122,7 +122,7 @@ if __name__ == '__main__':
     with open(config_path, 'r') as f:
         config = json.load(f)
 
-    remove_padding = config['build_config']['plugin_config']['remove_input_padding']
+    remove_input_padding = config['build_config']['plugin_config']['remove_input_padding']
     assert args.remove_input_padding == remove_padding, \
         f"The engine is build with remove_input_padding={remove_padding}, \
         but the inference runtime is performed with remove_input_padding={args.remove_input_padding}!"
