@@ -165,7 +165,7 @@ if __name__ == '__main__':
         start = i * batch_size
         end = min((i + 1) * batch_size, n)
         batch_texts = texts[start : end]
-        inputs, outputs = prepare_inputs(batch_texts, tokenizer, remove_input_padding)
+        inputs, outputs = prepare_inputs(batch_texts, tokenizer, remove_padding)
         ok = session.run(inputs=inputs, outputs=outputs, stream=0)
 
     torch.cuda.synchronize()
