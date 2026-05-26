@@ -161,7 +161,6 @@ if __name__ == '__main__':
     # Warmup
     ok = session.run(inputs=inputs, outputs=outputs, stream=0)
     assert ok, "Runtime execution failed"
-    torch.cuda.synchronize()
 
     start = time.time()
     ok = session.run(inputs=inputs, outputs=outputs, stream=0)

@@ -39,7 +39,6 @@ if __name__ == '__main__':
     with torch.no_grad():
         warmup_res = model(**inputs)
 
-    torch.cuda.synchronize()
     start = time.time()
     with torch.no_grad():
         outputs = model(**inputs)

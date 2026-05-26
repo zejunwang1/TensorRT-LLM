@@ -36,10 +36,10 @@ if __name__ == '__main__':
 
     # Warmup
     print('Warmup...')
-    warm_texts = texts[0 : args.batch_size]
-    warm_inputs = tokenizer(warm_texts, padding=True, return_tensors='pt').to('cuda')
+    warmup_texts = texts[0 : args.batch_size]
+    warmup_inputs = tokenizer(warmup_texts, padding=True, return_tensors='pt').to('cuda')
     with torch.no_grad():
-        warmup_outputs = model(**warm_inputs)
+        warmup_outputs = model(**warmup_inputs)
 
     n = len(texts)
     batch_size = args.batch_size
